@@ -1,0 +1,62 @@
+#!/bin/bash
+
+set -e
+
+REBASE_MASTER=false
+MERGE_FROM_MASTER=true
+
+if [[ "$1" = "-r" ]]; then
+    REBASE_MASTER=true
+fi
+
+if [[ "$1" = "-n" ]]; then
+    MERGE_FROM_MASTER=false
+fi
+
+ORIG_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+DIRTY=$(git status -uno --porcelain)
+if [[ -n $DIRTY ]]; then
+    # Stash if needed
+    echo "REUP: $ORIG_BRANCH is dirty, stashing changes..."
+    git stash save "Stashed by reup $$"
+    echo "REUP: stashed"
+fi
+
+# If not on branch master, stash and change to branch master
+if [[ "$ORIG_BRANCH" != "master" ]]; then
+    echo "REUP: current branch is $ORIG_BRANCH"
+    echo "REUP: checking out master..."
+    git checkout master
+fi
+
+git pull
+echo "REUP: rebasing from upstream..."
+git pull --rebase upstream master
+
+# push update to origin master
+echo "REUP: Push updated master to origin"
+git push origin master
+
+# Change back to branch if necessary and pop the stash if stashed.
+if [[ "$ORIG_BRANCH" != "master" ]]; then
+    echo "REUP: Returning to branch $ORIG_BRANCH"
+    git checkout "$ORIG_BRANCH"
+    if [[ -n $DIRTY ]]; then
+        echo "REUP: restoring from stash..."
+        git stash pop
+    fi
+
+    if [[ "$MERGE_FROM_MASTER" = "true" ]]; then
+        # If -r was given as an option, rebase master back to the branch instead of merge
+        if [[ "$REBASE_MASTER" = "true" ]]; then
+            echo "REUP: Rebasing from master..."
+            git rebase master
+        else
+            echo "REUP: Merge back from master..."
+            git merge master
+        fi
+    fi
+fi
+
+echo -e "\n### REUP IS DONE ###"

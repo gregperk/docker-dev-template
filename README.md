@@ -8,23 +8,18 @@ Clone this repo and rename the resulting folder to be your project name.
 
 Adjust the base image and dependencies in the `Dockerfile` as needed for what you're trying to do.
 
-If you renamed the folder to `foo`, you would then run the following:
+If you renamed the folder to `myfoo`, you could then `make build` to build the 
+image, `make clean` to kill any running containers and clean everything up,
+and `make run` or just use `./start [optional command]` to spin up the container.
 
-```
-cd foo
-docker build -t foo .
-docker run -p 8443:8443 -v $(pwd)/data:/data -v $(pwd)/code:/code --rm -it foo
-```
-
-This will spin up the container, 
-starting VSCode as a server reachable at: http://localhost:8443
+The VSCode server will then be reachable at: http://localhost:8443
 
 #### VSCode Extensions and Configuration
 
 You can install any extension and modify configuration like you would locally. 
 Any extensions you install and global configuration you update will persist 
-in the `./data` folder so you don't have to redo it every time you restart the 
-container.  By default VSCode will start up with the `./code` folder as the 
+in the `./vsdata` folder so you don't have to redo it every time you restart the 
+container.  By default VSCode will start up with the `./src` folder as the 
 workspace, which you can change by modifying the `docker-entrypoint.sh` file.
 
 You can pretty much VSCode as you would locally, doing things like starting 

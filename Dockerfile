@@ -1,4 +1,4 @@
-FROM node:11.13-stretch
+FROM python:3.7
 
 ARG release=1.696-vsc1.33.0
 RUN wget https://github.com/codercom/code-server/releases/download/$release/code-server$release-linux-x64.tar.gz \
@@ -7,9 +7,13 @@ RUN wget https://github.com/codercom/code-server/releases/download/$release/code
     && mv code-server$release-linux-x64/code-server /usr/local/bin \
     && rm -rf code-server$release-linux-x64*
 
-COPY docker-entrypoint.sh /usr/local/bin/
+COPY imgfiles/docker-entrypoint.sh /usr/local/bin/
+RUN mkdir /root/bin
+COPY imgfiles/git-reup /root/bin
 
-COPY ./code /code
-COPY ./data /data
+COPY ./src /src
+COPY ./vsdata /vsdata
+
+RUN mkdir /root/.bash_scripts
 
 ENTRYPOINT ["docker-entrypoint.sh"]
